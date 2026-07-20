@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "lib": [ "DOM", "DOM.Iterable", "ES2022" ],
+    "rootDir": "src",
+    "outDir": "./dist/",
+    "paths": {
+      "/*": ["./*", "./public/*"]
+    },
+    "useDefineForClassFields": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "sourceMap": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "allowJs": true,
+    
+    /* Strictness & Safety Tuning */
+    "noImplicitAny": false,
+    "noUnusedLocals": false,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    
+    "types": [
+      "vite/client",
+	  "babylonjs",
+    ]
+  },
+  "include": [ "src" ]
+}
