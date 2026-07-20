@@ -1,0 +1,25 @@
+{
+	"name": "chars3D-TC-v01-App-three",
+	"description": "chars3D typescript engine, App for Three.js",
+	"license": "MIT",
+	"author": {
+		"name": "petrospap",
+		"email": "ppetros@gmail.com"
+	},
+	"private": true,
+	"version": "1.0.0",
+	"type": "module",
+	"scripts": {
+		"preview": "vite preview",
+		"build": "tsc && vite build",
+		"start": "vite"
+	},
+	"devDependencies": {
+		"typescript": "6.0.3",
+		"vite": "latest"
+	},
+	"dependencies": {
+		"three": "latest"
+	}
+}
+
