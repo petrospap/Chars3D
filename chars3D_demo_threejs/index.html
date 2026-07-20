@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Demo App V1 Chars3D with Three.js</title>
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<style>
+html, body {overflow:hidden;width:100%;height:100%;margin:0;padding:0}
+#renderCanvas {width:100%;height:100%;margin:0;padding:0;touch-action:none}
+#renderCanvas:focus {outline:none}
+div{overflow:hidden;width:0;height:0}
+</style>
+</head>
+<body id="demov1" class="">
+<canvas id="renderCanvas"></canvas>
+<div id="log"></div>
+<script type="module" nonce="">
+import {App} from './src/js/index.ts';
+document.addEventListener('DOMContentLoaded', e => {
+try{
+	new App();
+}catch(e){
+	console.error(e)
+}
+});
+</script>
+</body>
+</html>
