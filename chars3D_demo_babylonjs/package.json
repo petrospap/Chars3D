@@ -1,0 +1,24 @@
+{
+	"name": "chars3D-TC-v01-demo",
+	"description": "chars3D typescript engine, demo for babylonjs, testing 2D/3D fonts",
+	"license": "MIT",
+	"author": {
+		"name": "petrospap",
+		"email": "ppetros@gmail.com"
+	},
+	"private": true,
+	"version": "1.0.0",
+	"type": "module",
+	"scripts": {
+		"preview": "vite preview",
+		"build": "tsc && vite build",
+		"start": "vite"
+	},
+	"devDependencies": {
+		"typescript": "latest",
+		"vite": "latest"
+	},
+	"dependencies": {
+		"@babylonjs/core": "latest"
+	}
+}

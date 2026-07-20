@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Chars3D TC V1 BETA for Babylon.js</title>
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<style>
+*{margin:0;padding:0}
+html, body{overflow:hidden;width:100%;height:100%}
+#renderCanvas{width:100%;height:100%;touch-action:none}
+div{overflow:hidden;width:0;height:0}
+</style>
+</head>
+<body id="chars3d" class="on">
+<canvas id="renderCanvas"></canvas>
+<div id="log"></div>
+<script type="module" nonce="">
+import {App} from './src/js/index.ts';
+document.addEventListener('DOMContentLoaded', e => {
+if (!('TextEncoder' in window)) {
+  alert('Sorry, this browser does not support TextEncoder..');
+  return
+};
+try{
+	new App();
+}catch(e){
+	console.error(e)
+}
+});
+</script>
+</body>
+</html>
