@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Create Chars3D TC V0.2</title>
+<link rel="icon" type="image/x-icon" href="favicon.ico">
+<style>
+a,abbr,acronym,address,applet,article,aside,audio,b,blockquote,big,center,canvas,caption,cite,code,command,datalist,dd,del,details,dfn,dl,div,dt,em,embed,fieldset,figcaption,figure,font,footer,form,h1,h2,h3,h4,h5,h6,header,hgroup,i,iframe,img,ins,kbd,keygen,label,legend,li,meter,nav,object,ol,output,p,pre,progress,q,s,samp,section,small,span,source,strike,strong,sub,sup,table,tbody,tfoot,thead,th,tr,tdvideo,tt,u,ul,var{background:none;margin:0;padding:0;outline:0;border:0;scrollbar-width:thin}
+*{box-sizing:border-box}
+html{scrollbar-width:thin;scroll-behavior:smooth}
+body{font:400 1.25rem/1.4 arial, verdana,"Segoe UI",sans-serif;width:100%;height:100%;margin:0;padding:0;overflow:hidden}
+[hidden]{display:none}
+a{position:relative;text-decoration:underline;line-break:auto;cursor:pointer;color:blue}
+a, a::before{transition:all 0.2s ease-in-out}
+a.dis{text-decoration:line-through;color:red}
+a:link{color:blue}
+a:visited{color:blue}
+a:hover{text-decoration:none}
+#container{position:relative;width:100vw;height:100vh;overflow:hidden}
+#renderCanvas {width:100%;height:100%;margin:0;padding:0;touch-action:none}
+#mainSidebar{background:#fafafa;width:500px;z-index:5000;position:fixed;right:-502px;top:0;bottom:0;border-left:1px solid #dfdfdf;overflow-y:visible;transition:all 0.5s ease}
+#mainSidebar.on{right:0}
+#navpanel{width:500px;height:100%;overflow-y:auto;overflow-x:hidden}
+#nav{background-color:#0d0d0d;padding:10px}
+#close{font-weight:600;height:26px;width:28px;background:#fafafa;color:firebrick;border:1px solid #555;border-radius:3px;cursor:pointer}
+#close::before{content:'\0058'}
+#close:hover{background:firebrick;color:#fafafa}
+li{display:flex;flex-direction:column;gap:10px;font-size:.9rem;color:#ececec;margin-bottom:14px;padding:10px;border:1px solid #fafafa;list-style:none;}
+li.header{font-size:1.1rem;color:#f8d15f;border:0}
+li.text{flex-direction:column}
+li div{width:100%;display:flex}
+li select{width:100%;padding:6px 8px;background:#fff}
+.gap{gap:10px}
+.space{justify-content:space-between;align-items:center;padding:5px 0 2px 0}
+fieldset{width:100%;display:flex;gap:10px;padding:20px 30px;border:1px solid #EE5050}
+label{display:flex;align-items:center}
+input{width:100%;padding:5px}
+input,textarea{background:#fafafa;border-radius:3px}
+input:focus,textarea:focus{outline:1px solid green}
+input[type="range"]:focus{outline:0}
+input[type="checkbox"]{width:auto}
+textarea{resize:vertical}
+#nav ul.submenu{display:none;background:#2c3328;transition:max-height 0.5s ease-in-out;overflow:hidden}
+#nav a{display:block;width:inherit;font-size:.9rem;color:#fafafa;padding:0 0 0 10px;margin:0;text-decoration:none;border-bottom:1px solid #ececec}
+li.actions{flex-direction:row;justify-content:center;gap:3rem;padding:20px 10px;border:0}
+.action{min-width:8rem;padding:6px 8px;font-size:.9rem;color:#fafafa;background:#222;border:1px solid #555;border-radius:3px;cursor:pointer;appearance:unset}
+.action:hover{background:#fafafa;color:#333;border-radius:5px}
+.tip{min-width:20px;position:relative;text-align:center}
+#logger{display:flex;flex-direction:column;position:fixed;left:-542px;top:0;bottom:0;width:500px;margin:0;z-index:5001;background:#222;color:#fff;border-right:1px solid #dfdfdf;overflow-y:visible;transition:all 0.5s ease}
+#logger.on{left:0}
+#buttons{display:flex;flex-direction:row;background:#fff;justify-content:end;padding:4px}
+#buttons button{font-size:.7em;border:1px solid #222;cursor:pointer;border-radius:1px;-webkit-appearance:none;appearance:none}
+#log{display:flex;flex-direction:column;gap:3px;width:500px;height:100%;font-family:"Input Mono",monospace;font-weight:400;font-size:0.6em;padding:10px;line-height:1.2em;overflow-y:auto;overflow-x:hidden}
+#log > div{background:#333;padding:5px}
+</style>
+</head>
+<body id="charscreate" class="on">
+<div id="container">
+<canvas id="renderCanvas"></canvas>
+<div id="mainSidebar" class="">
+	<div id="navpanel"></div>
+</div>
+<div id="logger" class=""><div id="log"></div><div id="buttons"><button type="button" id="reset">Reset</button></div></div>
+</div>
+<script type="module" nonce="">
+import {App} from './src/js/index.ts';
+document.addEventListener('DOMContentLoaded', e => {
+if (!('TextEncoder' in window)) {
+  alert('Sorry, this browser does not support TextEncoder..');
+  return
+};
+
+class ToolTip extends HTMLElement {
+    constructor() {
+        super();
+        const AS = this.attachShadow({mode: 'open'}),
+        a = document.createElement('span'),
+        b = a.cloneNode(),
+        s = document.createElement('style');
+        this.p = a.cloneNode();
+        a.className = 'aspan',
+        b.className = 'btn',
+        b.textContent = '?',
+        this.p.className = 'pop',
+        this.p.textContent = this.dataset.tip,
+        a.appendChild(b),
+        AS.appendChild(a);
+        const _top = !this.dataset.top ? `bottom` : `top`,
+		lOr = !this.dataset.right ? `-` : ``,
+        _a = a.getBoundingClientRect().right,
+        px = !_a ? `${lOr}300` : ((_a + 300) > window.innerWidth) ? `${lOr}320` : `300`;
+        s.textContent = `.btn{display:block;width:20px;text-decoration:underline;cursor:pointer}.pop{width:300px;position:absolute;${_top}:34px;left:${px}px;padding:10px;font:400 0.8rem/1.1rem arial,sans-serif;background:#ececec;color:#333;border:1px solid #ddd;border-radius:5px;opacity:0;transition:0.6s all;z-index:-1}.btn:hover + .pop{z-index:3;opacity:1}.pop.on{z-index:3;opacity:1}`;
+		AS.appendChild(s);
+        a.appendChild(this.p);
+        b.onclick = () => {
+            this.p.classList.contains('on') ? this.p.classList.remove('on') : this.p.classList.add('on')
+        }
+    }
+};
+customElements.define('tool-tip',ToolTip);
+try{
+	new App();
+}catch(e){
+	console.error(e)
+}
+});
+</script>
+</body>
+</html>

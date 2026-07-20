@@ -1,0 +1,27 @@
+{
+	"name": "chars3D-Create-TS",
+	"description": "Create Chars3D 2D/3D fonts for babylonjs or threejs, BETA, dual output",
+	"license": "MIT",
+	"author": {
+		"name": "petrospap",
+		"email": "ppetros@gmail.com"
+	},
+	"keywords": ["game", "graphics", "3D", "2D", "babylonjs", "threejs", "opentype", "earcut", "typescript", "javascript", "fonts", "font", "otf", "ttf", "woff"],
+	"private": true,
+	"version": "0.0.2",
+	"type": "module",
+	"scripts": {
+		"load": "node getfontnames.js",
+		"start": "npm run load && vite",
+		"build": "npm run load && vite build"
+	},
+	"devDependencies": {
+		"typescript": "latest",
+		"vite": "latest"
+	},
+	"dependencies": {
+		"@babylonjs/core": "latest",
+		"earcut": "^3.2.3",
+		"opentype.js": "^2.0.0"
+	}
+}
