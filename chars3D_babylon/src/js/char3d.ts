@@ -360,7 +360,7 @@ static defaultLightColor: Color3 = Color3.FromHexString(_SETTINGS.LIGHTCOLOR);
 			size: _size,
 			Len: _txt.length,
 			lineHeightCalc: _lineheight,
-			paragraphwidth: (X.paragraphwidth && X.paragraphwidth > 0) ? X.paragraphwidth : false,
+			paragraphwidth: (X.paragraphwidth && X.paragraphwidth > 0) ? (X.paragraphwidth + _letterpos.x) : false,
 			kern: (!X.kern && !info.kern) ? false : (X.kern ?? 0) + (info.kern ?? 0),
 			spacing: X.spacing ?? 0,
 			background: _background,
