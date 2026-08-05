@@ -286,6 +286,7 @@ static defaultLightColor: Color = Color3(_SETTINGS.LIGHTCOLOR);
 		_size = X.size ?? _SETTINGS.FONT_SIZE,
 		_lineheight = (_size * info.lineGap) * !X.lineheight ? _SETTINGS.LINE_HEIGHT : X.lineheight,
 		_planepos = X.planepos ?? {x:0, y:0, z:0},
+		_letterpos = X.letterpos ?? {x: 0, y: 0, z: 0},
 		_txtA = X.font !== _SETTINGS.DEFAULT_FONT ? Chars3D.setUpperLower(X.txt, info.chars) : X.txt,
 		_txt = info.charcode === 'word' ? Chars3D.replaceButtonText(_txtA) : _txtA,
 		_texture = !X.texture ? false : Chars3D.texture[X.texture],
@@ -368,7 +369,7 @@ static defaultLightColor: Color = Color3(_SETTINGS.LIGHTCOLOR);
 			font3d: _font3D, /* depth of 3D */
 			bevel: _bevel, /* depth of bevel */
 			billboard: _billboard,
-			letterpos: X.letterpos ?? {x: 0, y: 0, z: 0},
+			letterpos: _letterpos,
 			planepos: _planepos,
 			plane: _parent,
 			font: X.font, /* font name only */
@@ -376,7 +377,7 @@ static defaultLightColor: Color = Color3(_SETTINGS.LIGHTCOLOR);
 			size: _size,
 			Len: _txt.length,
 			lineHeightCalc: _lineheight,
-			paragraphwidth: (X.paragraphwidth && X.paragraphwidth > 0) ? X.paragraphwidth : false,
+			paragraphwidth: (X.paragraphwidth && X.paragraphwidth > 0) ? (X.paragraphwidth + _letterpos.x) : false,
 			kern: (!X.kern && !info.kern) ? false : (!X.kern && info.kern) ? info.kern : (X.kern && !info.kern) ? X.kern : info.kern + X.kern,
 			spacing: X.spacing ?? 0,
 			background: _background,
