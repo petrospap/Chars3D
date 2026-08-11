@@ -15,11 +15,13 @@ Yellow1: ['#f5eb9b','#e6b10e'],
 Red1: ['#f53d72','#8a0a2e'],
 gradients: ['#f5eb9b','#e6b10e', '#7ae48e','#145e22','#aaf5ef','#216696','#f53d72','#8a0a2e']
 },
-pad = (n: string|number): number => {return n < 10 ? '0' + n : n},
-memoryMB = (bytes: number): number => {
-	return (bytes / 1024 / 1024).toFixed(2)
+pad = (n: string | number): string => { // fixed to return string
+const val = typeof n === 'string' ? parseInt(n, 10) : n;
+return val < 10 ? '0' + val : '' + val;
+},
+memoryMB = (bytes: number): string => { // fixed to return string
+return (bytes / 1024 / 1024).toFixed(2)
 };
-
 
 export class App{
 
