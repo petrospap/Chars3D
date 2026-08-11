@@ -1,6 +1,6 @@
 # Chars3D (BETA)
 
-Chars3D is a lightweight, ultra-high-performance, parametric 2D and 3D typography rendering engine built for TypeScript, [Babylon.js](https://babylonjs.com/), and [Three.js](https://threejs.org/). By abandoning traditional, heavy CPU vertex-merging pipelines, Chars3D implements a data-oriented **Librarian Architecture** that enables **0ms–1ms text layout mutations directly on the live main thread**.
+Chars3D is a lightweight, ultra-high-performance, parametric 2D and 3D typography rendering engine built for TypeScript, currently running with those engines, [Babylon.js](https://babylonjs.com/), [Babylon/lite](https://www.babylonjs.com/lite/) and [Three.js](https://threejs.org/). By abandoning traditional, heavy CPU vertex-merging pipelines, Chars3D implements a data-oriented **Librarian Architecture** that enables **0ms–1ms text layout mutations directly on the live main thread**.
 
 It is purpose-built for rendering dynamic text across multiple concurrent fonts in fast-updating real-time applications, such as game HUD counters (FPS, scores), ticking system clocks, interactive 3D menus, and responsive virtual dashboards.
 
@@ -59,17 +59,51 @@ To keep deployment clean and prevent cross-framework package pollution, the repo
 
 ```
 /chars3D
-├── /chars3DCreate            # Node.js AOT Font Pre-compiler & Asset Generation dashboard
-├── /chars3D_demo_babylonjs   # Feature-rich BabylonJS showcase (Scoreboards, real-time clocks)
-├── /chars3D_babylon          # Standalone BabylonJS library files (Zero-noise template)
-├── /chars3D_demo_threejs     # Performance showcase running ThreeJS direct buffer blitting
-└── /chars3D_three            # Standalone ThreeJS library files (Zero-noise template)
+├── /chars3DCreate            	# Node.js AOT Font Pre-compiler & Asset Generation dashboard
+├── /chars3D_demo_   			# Feature-rich BabylonJS showcase (Scoreboards, real-time clocks)
+├── /chars3D_babylon          	# Standalone BabylonJS library files (Zero-noise template)
+├── /chars3D_demo_threejs     	# Performance showcase running ThreeJS direct buffer blitting
+├── /chars3D_three            	# Standalone ThreeJS library files (Zero-noise template)
+├── /playgroundAssets			# playground Assets
+├── /chars3D_pg_babylon_Lite	# Files for liteplayground demo (PG)
+├── /chars3D_babylon_Lite		# Standalone Babylon/lite library files (template: Under construction)
 ```
 
 ### Demos (BabylonJS OR ThreeJS)
 The `/chars3D_demo_babylonjs` and `/chars3D_demo_threejs` environments showcase the Chars3D blitting pipeline under heavy real-time mutation stress. 
 * *Note on ThreeJS Features*: The ThreeJS demo currently features a leaner layout suite compared to the BabylonJS build. As the core author specializes in BabylonJS, the open-source community is highly encouraged to contribute, expand, and patch missing parametric layout features!
 * *Performance Benchmark*: Despite fewer initial menu features, telemetry tracking reveals that **ThreeJS achieves a better raw WebGL rendering performance**, processing large text blocks in 0ms–1ms by binding raw arrays directly onto hardware attributes.
+
+### Chars3D WebGPU Engine - Demo Babylon Lite
+
+The `/chars3D_pg_babylon_Lite` directory contains the modern, WebGPU-exclusive iteration of Chars3D ported directly to the tree-shakable @babylonjs/lite ecosystem.
+You can test its performance metrics, multi-stage typography layering, and liquid procedural shaders instantly in the **official Babylon Lite Playground Sandbox:**
+🔗 [Chars3D Dynamic Live Playground Snippet](https://liteplayground.babylonjs.com/snippet/KCY4JL/v/0)
+
+**Architecture Shift: BabylonJS vs. Babylon Lite**
+
+Transitioning from standard legacy Babylon.js to the modern Lite ecosystem introduces critical architectural improvements:
+	
+	**Dual-Scene Pipeline:**
+	Because Babylon Lite drops traditional billboard states, we implement an optimized dual-scene layout tracking a single canvas context. This isolates our interactive world space from a completely locked, high-speed 2D UI interface overlay.
+	
+	**Functional Geometry Packing & Pipeline Limitations**
+	Custom font glyph streams bypass heavy, class-based object instantiations and write raw coordinates directly into a single continuous ArrayBuffer for unified GPU uploads. 
+	However, implementing this layout under Babylon Lite reveals key memory and API constraints:
+
+	**WebGPU Attribute Overhead:** 
+	Flattening detailed typography alongside custom miter data and stage coloring tracking vectors increases the runtime layout footprint. For 2,346 characters, the master text array buffer consumes **~5.39 MB of base memory paired with ~3.01 MB of extra memory** dedicated strictly to storing WebGPU tracking attributes (T and FIDCOLOR).
+
+	**Rigid Buffer Architecture:**
+	The native createMeshFromData() factory handles vertex definitions through a rigid layout pattern designed for fixed attributes (positions, normals, indices, uvs, uvs2, tangents, colors).
+
+	**Custom Vertex Shader Constraints:**
+	Because the factory lacks a generic data pipeline or an extensible attribute dictionary loop, we cannot pass custom scalar registers like our legacy "aFaceId" directly. 
+	To maintain compatibility with Lite rigid layout, our engine must manually reformat 1-component custom data into standard 4-component vectors (Float32Array) and inject them into an unrelated register slot like colors (input.color.x) or tangents. 
+	This limitation restricts the framework's native capabilities when writing tailored, highly complex WebGPU WGSL vertex modules.
+
+> Note: Clean, standalone implementation build scripts and modular packages for standalone deployment will be deployed directly once final framework iterations conclude.
+
 
 ### 📦 Standalone Libraries (To start your own App)
 Because this project is in its public BETA rollout phase, it is distributed directly via this repository rather than an NPM bundle. To integrate Chars3D into an active project without the visual noise or interface overlays of the interactive demos, navigate to `/chars3D_babylon` or `/chars3D_three`. These folders isolate the pure engine scripts, enabling you to mount fonts, hook up textures, and render custom paragraphs instantly.
