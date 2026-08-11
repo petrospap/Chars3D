@@ -284,7 +284,7 @@ r: IRange[];   // ranges
 }
 
 /* 2D or 3D letters */
-interface IG3D {
+export interface IG3D {
 _w: number;			// width
 _x: number[];	  	// bounds from opentype.js [xMin, yMin, xMax, yMax]
 _v: number[];     	// vertices
