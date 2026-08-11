@@ -1,6 +1,7 @@
 # Chars3D Babylon Lite Demo
 
 A simply demo for [Babylon/lite](https://www.babylonjs.com/lite/), contains all the possibilities that you can `draw` with **Chars3D**.
+
 A playground demo can be viewed in [Chars3D demo for Babylon Lite](https://liteplayground.babylonjs.com/snippet/KCY4JL/v/0)
 
 ---
@@ -8,7 +9,6 @@ A playground demo can be viewed in [Chars3D demo for Babylon Lite](https://litep
 ## Build Your App
 
 Build you App using **Babylon/lite** with pre builded fonts, but you can use your own fonts!
-
 
 NOTE: this App contain a basic implementation for demo only.
 
