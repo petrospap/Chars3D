@@ -8,7 +8,7 @@ import type {IAddAction, IPos, Ixy, IChars, IMaterial, IDrawOptions, IParagraphS
 /**
 * From Version 0.1 Alpha > https://playground.babylonjs.com/#X3SVLW#1
 * to this!
-* Chars3D ts:v 7.7 with Atlas, bevel, shader, buttons, hover
+* Chars3D ts:v 7.8 with Atlas, bevel, shader, buttons, hover
 * Video demo: https://youtu.be/HOq4Ne5q9xc
 * Jul 8, 2026 12:00
 */
@@ -294,6 +294,8 @@ Draw debuginfo > It took 5 ms
  * return IParagraphState.
  * @param X: interface IParagraphState stored in Chars3D.ch, used in ALL draws
  * @param id: 				string;
+ * @param txt:				string; // fixed missed
+ * @param txtbtn:			string[]|false; // new
  * @param sticky: 			number|false;
  * @param charcode: 		string;
  * @param font3d: 			number|false;
@@ -340,26 +342,41 @@ Draw debuginfo > It took 5 ms
 
 	private static setData(X: IDrawOptions): IParagraphState {
 		
+		/* if font is not called, set font to default */
+		if(!X.font){
+			X.font = _SETTINGS.DEFAULT_FONT
+		};
+
+		if(!Atlas.fonts[X.font]){
+			log('%cError: font name [%s] not exist',_color.error,X.font);
+			return false
+		}
+		
 		const info = Atlas.fonts[X.font]._info;
 		
-		let _parent,
+		let _parent: any,
 		_size = X.size ?? _SETTINGS.FONT_SIZE,
-		_lineheight = (_size * info.lineGap) * !X.lineheight ? _SETTINGS.LINE_HEIGHT : X.lineheight,
+		//_lineheight = (_size * info.lineGap) * !X.lineheight ? _SETTINGS.LINE_HEIGHT : X.lineheight,
+		_lineheight = (_size * info.lineGap) * (!X.lineheight ? _SETTINGS.LINE_HEIGHT : X.lineheight),
 		_planepos = X.planepos ?? {x:0, y:0, z:0},
 		_letterpos = X.letterpos ?? {x: 0, y: 0, z: 0},
-		_txtA = X.font !== _SETTINGS.DEFAULT_FONT ? Chars3D.setUpperLower(X.txt, info.chars) : X.txt,
-		_txt = info.charcode === 'word' ? Chars3D.replaceButtonText(_txtA) : _txtA,
+		_txt = X.font !== _SETTINGS.DEFAULT_FONT ? Chars3D.setUpperLower(X.txt, info.chars) : X.txt,
+		_txtbtn = info.charcode === 'word' ? Chars3D.replaceButtonText(_txt) : false,
+		_len = !_txtbtn ? _txt.length : _txtbtn.length,
+		
+		//_txtA = X.font !== _SETTINGS.DEFAULT_FONT ? Chars3D.setUpperLower(X.txt, info.chars) : X.txt,
+		//_txt = info.charcode === 'word' ? Chars3D.replaceButtonText(_txtA) : _txtA,
 		_texture = !X.texture ? false : Chars3D.texture[X.texture],
 		_diffusecolor = X.diffusecolor ? Color3.FromHexString(X.diffusecolor) : Chars3D.defaultDiffuseColor,
 		_emissivecolor = X.emissivecolor ? Color3.FromHexString(X.emissivecolor) : Chars3D.defaultEmissiveColor,
 		_ambientcolor = X.ambientcolor ? Color3.FromHexString(X.ambientcolor) : Chars3D.defaultAmbientColor,
 		_specularcolor = X.specularcolor ? Color3.FromHexString(X.specularcolor) : Chars3D.defaultSpecularColor,
-		_source = false,
+		_source:any = false,
 		_billboard = X.billboard ?? 7, /* default billboard to 7 */
 		_outline = false,
 		_outlinedepth = null,
 		_outlinecolor = null,
-		_font3D = false,
+		_font3D:any = false,
 		_bevel = 0,
 		_frontcolor = Color4.FromHexString(X.frontcolor ?? _SETTINGS.FRONT_COLOR),
 		_sidewallcolor = false,
@@ -419,6 +436,7 @@ Draw debuginfo > It took 5 ms
 		return {
 			id: X.id,
 			txt: _txt,
+			txtbtn: _txtbtn,
 			sticky: X.sticky ?? false,
 			charcode: info.charcode, /* ONLY IN V2 exist charcode */
 			font3d: _font3D, /* depth of 3D */
@@ -430,9 +448,9 @@ Draw debuginfo > It took 5 ms
 			font: X.font, /* font name only */
 			meta: X.meta ?? false, /* callback */
 			size: _size,
-			Len: _txt.length,
+			Len: _len, //_txt.length,
 			lineHeightCalc: _lineheight,
-			paragraphwidth: (X.paragraphwidth && X.paragraphwidth > 0) ? (X.paragraphwidth + _letterpos.x) : false,
+			paragraphwidth: (X.paragraphwidth && X.paragraphwidth > 0) ? X.paragraphwidth : false,
 			kern: (!X.kern && !info.kern) ? false : (X.kern ?? 0) + (info.kern ?? 0),
 			spacing: X.spacing ?? 0,
 			background: _background,
@@ -537,6 +555,7 @@ Draw debuginfo > It took 5 ms
 		Chars3D.dispose(X.id);
 
 		/* if font is not called, set font to default */
+		/*
 		if(!X.font){
 			X.font = _SETTINGS.DEFAULT_FONT
 		};
@@ -545,6 +564,7 @@ Draw debuginfo > It took 5 ms
 			log('%cError: font name [%s] not exist',_color.error,X.font);
 			return
 		}
+		*/
 
 		/* set and store data */
 		Chars3D.ch[X.id] = Chars3D.setData(X);
@@ -606,7 +626,8 @@ Draw debuginfo > It took 5 ms
 
 		for (; i < Len; i++) {
 			
-			const letter = P.charcode === 'code' ? P.txt.charCodeAt(i) : P.txt[i];
+			//const letter = P.charcode === 'code' ? P.txt.charCodeAt(i) : P.txt[i];
+			const letter = P.txtbtn === false ? P.txt.charCodeAt(i) : P.txtbtn[i];
 			const g = Atlas.fonts[P.font][letter];
 
 			if (g) {
@@ -629,7 +650,7 @@ Draw debuginfo > It took 5 ms
 							IL: g.IL, //g.I.length,
 						 });
 
-						if (P.background || P.border) {
+						//if (P.background || P.border) {
 							/* find minX and maxX */
 							const LE = pos.x + (g.bounds.minX * S); // minX = Left Edge
 							const RE = pos.x + (g.bounds.maxX * S); // maxX = Right Edge
@@ -637,13 +658,13 @@ Draw debuginfo > It took 5 ms
 							/* set max/min bounds */
 							if (LE < minX) minX = LE;
 							if (RE > maxX) maxX = RE
-						}
+						//}
 					};
 
 					letterspace = 0;
 					
-					/* add default kern */
-					if (P.defaultKern && i < P.defaultKern) {
+					/* add default kern, new txtbtn */
+					if (P.txtbtn === false && P.defaultKern && i < P.defaultKern) {
 						const kern = Atlas.fonts[P.font][letter]._k[P.txt.charCodeAt(i + 1)];
 						if (kern) letterspace += kern;
 					}
@@ -669,6 +690,23 @@ Draw debuginfo > It took 5 ms
 		};
 
 		/*  caclulate background panel coordinates */
+		// v2 new position coordinates
+		if (minX === Infinity) {
+			minX = maxX = P.letterpos.x
+		};
+		const absoluteTop = P.letterpos.y + (P.ascender * S);   // Locked top of line, MaxY
+		const absoluteBottom = pos.y + (P.descender * S);       // Locked bottom of line, MinY
+		const paragraphHeight = absoluteTop - absoluteBottom;
+		const paragraphWidth = maxX - minX;
+
+		P.centerXOffset = (minX + (paragraphWidth * 0.5)) + P.adjustX;
+		P.centerYOffset = (absoluteBottom + (paragraphHeight * 0.5)) + P.adjustY;
+
+		P.finalWidth = (paragraphWidth * 0.5) + P.padding[0];
+		P.finalHeight = (paragraphHeight * 0.5) + P.padding[1];
+		
+		/*
+		// v1
 		if (P.background || P.border) {
 			if (minX === Infinity) {
 				minX = maxX = P.letterpos.x
@@ -679,13 +717,13 @@ Draw debuginfo > It took 5 ms
 			const paragraphHeight = absoluteTop - absoluteBottom;
 			const paragraphWidth = maxX - minX;
 
-			/** 
-			NOTE: about adjustY / adjustX
-			this is a BUG? as centerYOffset has a tiny declination!
-			too many different values to calculate correct bounds for each letter,
-			some letters may not have even bounds!
-			adjustY/X added to set a precision Y/X position of background/border
-			*/
+			 
+			//NOTE: about adjustY / adjustX
+			//this is a BUG? as centerYOffset has a tiny declination!
+			//too many different values to calculate correct bounds for each letter,
+			//some letters may not have even bounds!
+			//adjustY/X added to set a precision Y/X position of background/border
+			
 			
 			P.centerXOffset = (minX + (paragraphWidth / 2)) + P.adjustX;
 			P.centerYOffset = (absoluteBottom + (paragraphHeight / 2)) + P.adjustY;
@@ -693,6 +731,7 @@ Draw debuginfo > It took 5 ms
 			P.finalWidth = (paragraphWidth + P.padding[0]) / 2;
 			P.finalHeight = (paragraphHeight + P.padding[1]) / 2
 		};
+		*/
 
 		/* in update check the size */
 		if (update) {
@@ -710,12 +749,18 @@ Draw debuginfo > It took 5 ms
 	static drawButtons(O: IParagraphState): void {
 
 		const pos: IPos = {...O.letterpos},
-		lettersize = O.size;
+		lettersize = O.size,
+		btns = !O.txtbtn ? false : [...O.txtbtn];
+        if(!btns){
+            console.log('Fatal for buttons')
+            return
+        };
 		let i = 0,
 		letterspace = 0;
 		
 		for (; i < O.Len; i++){
-			const letter = O.txt[i],
+			//const letter = O.txt[i],
+			const letter = btns[i],
 			g = Atlas.fonts[O.font][letter];
 			if (g) {
 
@@ -1159,7 +1204,6 @@ Draw debuginfo > It took 5 ms
 		}
 	};
 */
-
 
 	static dispose(id: string): boolean {
 
