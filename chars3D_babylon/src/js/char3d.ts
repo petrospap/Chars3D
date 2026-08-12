@@ -6,7 +6,8 @@ import {Atlas} from './AtlasFactory.ts';
 import type {IAddAction, IPos, Ixy, IChars, IDrawOptions, IParagraphState, IUpdateData, IUpdateButton, IEnableOrDisable, IBoundingBox, IG3D, IBlitBuffers} from './interfaces.ts';
 
 /**
-* Chars3D ts:v 7.7 with Atlas, bevel, shader, buttons, hover
+* Chars3D ts:v 7.8 with Atlas, bevel, shader, buttons, hover 
+fixed buttons and updated position coordinates
 */
 
 /* helper */
@@ -36,7 +37,7 @@ static defaultSpecularColor: Color3 = Color3.FromHexString(_SETTINGS.SPECULAR_CO
 static defaultLightColor: Color3 = Color3.FromHexString(_SETTINGS.LIGHTCOLOR);
 
 
-	constructor(scene:Scene, _fonts: IG3D, _blit: IBlitBuffers, _textures: Texture, _hasblit: boolean, _hasfont: boolean){
+	constructor(scene:Scene, _fonts: IG3D, _blit: IBlitBuffers, _textures: any, _hasblit: boolean, _hasfont: boolean){
 
 		Chars3D._scene = scene;
 		Chars3D._cam = scene.activeCamera;
@@ -224,6 +225,8 @@ static defaultLightColor: Color3 = Color3.FromHexString(_SETTINGS.LIGHTCOLOR);
  * return IParagraphState.
  * @param X: interface IParagraphState stored in Chars3D.ch, used in ALL draws
  * @param id: 				string;
+ * @param txt:				string; // fixed missed
+ * @param txtbtn:			string[]|false; // new
  * @param sticky: 			number|false;
  * @param charcode: 		string;
  * @param font3d: 			number|false;
@@ -231,7 +234,7 @@ static defaultLightColor: Color3 = Color3.FromHexString(_SETTINGS.LIGHTCOLOR);
  * @param billboard: 		number
  * @param letterpos: 		IPos;
  * @param planepos: 		IPos;
- * @param plane: 			any[]; // TransformNode | Mesh
+ * @param plane: 			any; // TransformNode | Mesh
  * @param font: 			string;
  * @param meta: 			any[]|false;
  * @param size: 			number;
@@ -250,12 +253,12 @@ static defaultLightColor: Color3 = Color3.FromHexString(_SETTINGS.LIGHTCOLOR);
  * @param outline: 			boolean;
  * @param outlinedepth: 	number;
  * @param outlinecolor: 	number[];
- * @param paragraph: 		any[];	// Single Mesh
+ * @param paragraph: 		any;	// Single Mesh
  * @param meshes: 			any[]; 	// Multiple Meshes, i.e buttons
- * @param material: 		any[]; 	// Char3DMaterial
+ * @param material: 		any; 	// Char3DMaterial
  * @param defaultKern: 		number|false;
  * @param source: 			IBoundingBox|false;
- * @param jit: 				any[]; 	// AtlasAssemble,
+ * @param jit: 				any; 	// AtlasAssemble,
  * @param plasmatime:		number;
  * @param finalWidth: 		number;
  * @param finalHeight: 		number;
@@ -268,28 +271,41 @@ static defaultLightColor: Color3 = Color3.FromHexString(_SETTINGS.LIGHTCOLOR);
  * @param observer?: 		() => void; // holder function to Execute Sticky
 */
 
-	private static setData(X: IDrawOptions): IParagraphState {
+	private static setData(X: IDrawOptions): IParagraphState|false {
+		/* if font is not called, set font to default */
+		if(!X.font){
+			X.font = _SETTINGS.DEFAULT_FONT
+		};
+		
+		if(!Atlas.fonts[X.font]){
+			console.log('Error: font name ['+X.font+'] not exist');
+			return false
+		}
 		
 		const info = Atlas.fonts[X.font]._info;
 		
 		let _parent,
 		_size = X.size ?? _SETTINGS.FONT_SIZE,
-		_lineheight = (_size * info.lineGap) * !X.lineheight ? _SETTINGS.LINE_HEIGHT : X.lineheight,
+		//_lineheight = (_size * info.lineGap) * !X.lineheight ? _SETTINGS.LINE_HEIGHT : X.lineheight,
+		_lineheight = (_size * info.lineGap) * (!X.lineheight ? _SETTINGS.LINE_HEIGHT : X.lineheight),
 		_planepos = X.planepos ?? {x:0, y:0, z:0},
 		_letterpos = X.letterpos ?? {x: 0, y: 0, z: 0},
-		_txtA = X.font !== _SETTINGS.DEFAULT_FONT ? Chars3D.setUpperLower(X.txt, info.chars) : X.txt,
-		_txt = info.charcode === 'word' ? Chars3D.replaceButtonText(_txtA) : _txtA,
+		_txt = X.font !== _SETTINGS.DEFAULT_FONT ? Chars3D.setUpperLower(X.txt, info.chars) : X.txt,
+		_txtbtn = info.charcode === 'word' ? Chars3D.replaceButtonText(_txt) : false,
+		_len = !_txtbtn ? _txt.length : _txtbtn.length,
+		//_txtA = X.font !== _SETTINGS.DEFAULT_FONT ? Chars3D.setUpperLower(X.txt, info.chars) : X.txt,
+		//_txt = info.charcode === 'word' ? Chars3D.replaceButtonText(_txtA) : _txtA,
 		_texture = !X.texture ? false : Chars3D.texture[X.texture],
 		_diffusecolor = X.diffusecolor ? Color3.FromHexString(X.diffusecolor) : Chars3D.defaultDiffuseColor,
 		_emissivecolor = X.emissivecolor ? Color3.FromHexString(X.emissivecolor) : Chars3D.defaultEmissiveColor,
 		_ambientcolor = X.ambientcolor ? Color3.FromHexString(X.ambientcolor) : Chars3D.defaultAmbientColor,
 		_specularcolor = X.specularcolor ? Color3.FromHexString(X.specularcolor) : Chars3D.defaultSpecularColor,
-		_source = false,
+		_source:any = false,
 		_billboard = X.billboard ?? 7, /* default billboard to 7 */
 		_outline = false,
 		_outlinedepth = null,
 		_outlinecolor = null,
-		_font3D = false,
+		_font3D:any = false,
 		_bevel = 0,
 		_frontcolor = Color4.FromHexString(X.frontcolor ?? _SETTINGS.FRONT_COLOR),
 		_sidewallcolor = false,
@@ -347,6 +363,7 @@ static defaultLightColor: Color3 = Color3.FromHexString(_SETTINGS.LIGHTCOLOR);
 		return {
 			id: X.id,
 			txt: _txt,
+			txtbtn: _txtbtn,
 			sticky: X.sticky ?? false,
 			charcode: info.charcode, /* ONLY IN V2 exist charcode */
 			font3d: _font3D, /* depth of 3D */
@@ -358,9 +375,9 @@ static defaultLightColor: Color3 = Color3.FromHexString(_SETTINGS.LIGHTCOLOR);
 			font: X.font, /* font name only */
 			meta: X.meta ?? false, /* callback */
 			size: _size,
-			Len: _txt.length,
+			Len: _len, //_txt.length,
 			lineHeightCalc: _lineheight,
-			paragraphwidth: (X.paragraphwidth && X.paragraphwidth > 0) ? (X.paragraphwidth + _letterpos.x) : false,
+			paragraphwidth: (X.paragraphwidth && X.paragraphwidth > 0) ? X.paragraphwidth : false,
 			kern: (!X.kern && !info.kern) ? false : (X.kern ?? 0) + (info.kern ?? 0),
 			spacing: X.spacing ?? 0,
 			background: _background,
@@ -413,7 +430,7 @@ static defaultLightColor: Color3 = Color3.FromHexString(_SETTINGS.LIGHTCOLOR);
  * Chars3D main function to draw text, 
  * X: user input options, interface: IDrawOptions
  * @param id: 					string;
- * @param txt: 					string|string[];
+ * @param txt: 					string;
  * @param planePos: 			IPos;
  * @param parent?: 				Mesh;
  * @param meta?: 				any[]; // callback
@@ -461,16 +478,6 @@ static defaultLightColor: Color3 = Color3.FromHexString(_SETTINGS.LIGHTCOLOR);
 		/* dispose if exist this id */
 		Chars3D.dispose(X.id);
 
-		/* if font is not called, set font to default */
-		if(!X.font){
-			X.font = _SETTINGS.DEFAULT_FONT
-		};
-		
-		if(!Atlas.fonts[X.font]){
-			console.log('Error: font name ['+X.font+'] not exist');
-			return
-		}
-
 		/* set and store data */
 		Chars3D.ch[X.id] = Chars3D.setData(X);
 		const ch = Chars3D.ch[X.id];
@@ -510,7 +517,8 @@ static defaultLightColor: Color3 = Color3.FromHexString(_SETTINGS.LIGHTCOLOR);
 
 		for (; i < Len; i++) {
 			
-			const letter = P.charcode === 'code' ? P.txt.charCodeAt(i) : P.txt[i];
+			//const letter = P.charcode === 'code' ? P.txt.charCodeAt(i) : P.txt[i];
+			const letter = P.txtbtn === false ? P.txt.charCodeAt(i) : P.txtbtn[i];
 			const g = Atlas.fonts[P.font][letter];
 
 			if (g) {
@@ -533,21 +541,20 @@ static defaultLightColor: Color3 = Color3.FromHexString(_SETTINGS.LIGHTCOLOR);
 							IL: g.IL, //g.I.length,
 						 });
 
-						if (P.background || P.border) {
-							/* find minX and maxX */
-							const LE = pos.x + (g.bounds.minX * S); // minX = Left Edge
-							const RE = pos.x + (g.bounds.maxX * S); // maxX = Right Edge
-							
-							/* set max/min bounds */
-							if (LE < minX) minX = LE;
-							if (RE > maxX) maxX = RE
-						}
+						/* find minX and maxX */
+						const LE = pos.x + (g.bounds.minX * S); // minX = Left Edge
+						const RE = pos.x + (g.bounds.maxX * S); // maxX = Right Edge
+						
+						/* set max/min bounds */
+						if (LE < minX) minX = LE;
+						if (RE > maxX) maxX = RE
+
 					};
 
 					letterspace = 0;
 					
-					/* add default kern */
-					if (P.defaultKern && i < P.defaultKern) {
+					/* add default kern, new txtbtn */
+					if (P.txtbtn === false && P.defaultKern && i < P.defaultKern) {
 						const kern = Atlas.fonts[P.font][letter]._k[P.txt.charCodeAt(i + 1)];
 						if (kern) letterspace += kern;
 					}
@@ -573,30 +580,20 @@ static defaultLightColor: Color3 = Color3.FromHexString(_SETTINGS.LIGHTCOLOR);
 		};
 
 		/*  caclulate background panel coordinates */
-		if (P.background || P.border) {
-			if (minX === Infinity) {
-				minX = maxX = P.letterpos.x
-			};
-			
-			const absoluteTop = P.letterpos.y + (P.ascender * S);	// Locked top of line, MaxY
-			const absoluteBottom = pos.y + (P.descender * S); 		// Locked bottom of line, MinY
-			const paragraphHeight = absoluteTop - absoluteBottom;
-			const paragraphWidth = maxX - minX;
-
-			/** 
-			NOTE: about adjustY / adjustX
-			this is a BUG? as centerYOffset has a tiny declination!
-			too many different values to calculate correct bounds for each letter,
-			some letters may not have even bounds!
-			adjustY/X added to set a precision Y/X position of background/border
-			*/
-			
-			P.centerXOffset = (minX + (paragraphWidth / 2)) + P.adjustX;
-			P.centerYOffset = (absoluteBottom + (paragraphHeight / 2)) + P.adjustY;
-			
-			P.finalWidth = (paragraphWidth + P.padding[0]) / 2;
-			P.finalHeight = (paragraphHeight + P.padding[1]) / 2
+		// v2 new position coordinates
+		if (minX === Infinity) {
+			minX = maxX = P.letterpos.x
 		};
+		const absoluteTop = P.letterpos.y + (P.ascender * S);   // Locked top of line, MaxY
+		const absoluteBottom = pos.y + (P.descender * S);       // Locked bottom of line, MinY
+		const paragraphHeight = absoluteTop - absoluteBottom;
+		const paragraphWidth = maxX - minX;
+
+		P.centerXOffset = (minX + (paragraphWidth * 0.5)) + P.adjustX;
+		P.centerYOffset = (absoluteBottom + (paragraphHeight * 0.5)) + P.adjustY;
+
+		P.finalWidth = (paragraphWidth * 0.5) + P.padding[0];
+		P.finalHeight = (paragraphHeight * 0.5) + P.padding[1];
 
 		/* in update check the size */
 		if (update) {
@@ -614,12 +611,18 @@ static defaultLightColor: Color3 = Color3.FromHexString(_SETTINGS.LIGHTCOLOR);
 	static drawButtons(O: IParagraphState): void {
 
 		const pos: IPos = {...O.letterpos},
-		lettersize = O.size;
+		lettersize = O.size,
+		btns = !O.txtbtn ? false : [...O.txtbtn];
+        if(!btns){
+            console.log('Fatal for buttons')
+            return
+        };
 		let i = 0,
 		letterspace = 0;
 		
 		for (; i < O.Len; i++){
-			const letter = O.txt[i],
+			//const letter = O.txt[i],
+			const letter = btns[i],
 			g = Atlas.fonts[O.font][letter];
 			if (g) {
 
