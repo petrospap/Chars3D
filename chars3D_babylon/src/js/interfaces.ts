@@ -1,4 +1,4 @@
-// interfaces v:0.5
+// interfaces v:0.6 - fixed missed types
 
 export interface IPos {
 x: number;
@@ -21,14 +21,14 @@ m: number[];
 export interface IBackgroundGeometry {
 innerX: Float32Array;
 innerY: Float32Array;
-outerX?: Float32Array;
-outerY?: Float32Array;
+outerX: Float32Array;
+outerY: Float32Array;
 }
 
 // Main User Text Input, passed to draw()
 export interface IDrawOptions {
 id: string;
-txt: string|string[];
+txt: string;
 planePos: IPos;
 parent?: Mesh;
 meta?: any[];
@@ -75,6 +75,8 @@ exclude?: boolean;
 /* Calculated State setData() */
 export interface IParagraphState {
 id: string;
+txt: string; // fixed missed
+txtbtn:	string[]|false; // new
 sticky: number|false;
 charcode: string;
 font3d: number|false;
@@ -82,7 +84,7 @@ bevel: number;
 billboard: number
 letterpos: IPos;
 planepos: IPos;
-plane: any[]; // TransformNode | Mesh
+plane: any; // TransformNode | Mesh
 font: string;
 meta: any[]|false;
 size: number;
@@ -101,12 +103,12 @@ thickness: number;
 outline: boolean;
 outlinedepth: number;
 outlinecolor: number[];
-paragraph: any[];
+paragraph: any;
 meshes: any[];
-material: any[]; /* Char3DMaterial */
+material: any; /* Char3DMaterial */
 defaultKern: number|false;
 source: IBoundingBox|false;
-jit: any[]; /* AtlasAssemble */
+jit: any; /* AtlasAssemble */
 plasmatime:number;
 finalWidth: number;
 finalHeight: number;
@@ -181,8 +183,8 @@ N: Float32Array; 		// Normals
 U: Float32Array; 		// UVs
 FID: Float32Array;		// Colors shader
 L: number; 				// Positions length
-IL?: number; 			// RAW Indices length
-bounds?: IGlyphXBounds 	// chars bounds
+IL: number; 			// RAW Indices length
+bounds: IGlyphXBounds 	// chars bounds
 //_k?: Record<string, number>; // kern
 }
 
@@ -190,14 +192,14 @@ export interface IBlitBuffers {
 _w: number;    			// width
 _v: number|null;		// working as flag, is vertex char or not
 _k?: Record<string, number>; // kern
-P?: Float32Array; 		// Positions
-I?: Uint32Array;  		// Indices
-N?: Float32Array; 		// Normals
-U?: Float32Array; 		// UVs
-FID?: Float32Array;		// Colors shader
-L?: number; 			// Positions length
-IL?: number; 			// RAW Indices length
-bounds?: IGlyphXBounds 	// chars bounds
+P: Float32Array; 		// Positions
+I: Uint32Array;  		// Indices
+N: Float32Array; 		// Normals
+U: Float32Array; 		// UVs
+FID: Float32Array;		// Colors shader
+L: number; 			// Positions length
+IL: number; 			// RAW Indices length
+bounds: IGlyphXBounds 	// chars bounds
 }
 
 /* UI chars */
@@ -242,21 +244,21 @@ r: IRange[];   // ranges
 /* 2D or 3D letters */
 export interface IG3D {
 _w: number;			// width
-_x?: number[];	  	// bounds from opentype.js [xMin, yMin, xMax, yMax]
-_v?: number[];     	// vertices
-_i?: number[];     	// indices
-_n?: number[];     	// normals
-_k?: Record<string, number>; // kern
-_o?: IContour[];  	// contours (3D)
-_f?: number;	  	// NEW front vertex count, same as the old V1 _b.f
-bounds?: IGlyphXBounds; // char bounds NOTE: when we set this we delete "_x"
-P?: Float32Array; 		// Positions
-I?: Uint32Array;  		// Indices number[];
-N?: Float32Array; 		// Normals
-U?: Float32Array; 		// UVs
-FID?: Float32Array;		// Colors shader
-L?: number; 			// Positions length
-IL?: number; 			// RAW Indices length
+_x: number[];	  	// bounds from opentype.js [xMin, yMin, xMax, yMax]
+_v: number[];     	// vertices
+_i: number[];     	// indices
+_n: number[];     	// normals
+_k: Record<string, number>; // kern
+_o: IContour[];  	// contours (3D)
+_f: number;	  	// NEW front vertex count, same as the old V1 _b.f
+bounds: IGlyphXBounds; // char bounds NOTE: when we set this we delete "_x"
+P: Float32Array; 		// Positions
+I: Uint32Array;  		// Indices number[];
+N: Float32Array; 		// Normals
+U: Float32Array; 		// UVs
+FID: Float32Array;		// Colors shader
+L: number; 				// Positions length
+IL: number; 			// RAW Indices length
 }
 
 export interface IFontData {
