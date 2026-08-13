@@ -6,7 +6,7 @@ import {Atlas} from './AtlasFactory';
 import type {IPos, Ixy, IChars, IMaterial, IDrawOptions, IParagraphState, IUpdateData, IUpdateButton, IEnableOrDisable, ILogTotal, IBoundingBox, IBoundingInfo} from './interfaces';
 
 /**
- * Chars3D ts:v 1.0.0 Three.js
+ * Chars3D ts:v 1.0.1 minor update Three.js 
  * Video demo: https://youtu.be/HOq4Ne5q9xc
  * Jun 14, 2026 12:00
  * "three": "^0.184.0"
@@ -273,6 +273,8 @@ static total: ILogTotal = { totalfonts: 0, letters2D: 0, letters3D: 0, letters: 
  * return IParagraphState.
  * @param X: interface IParagraphState stored in Chars3D.ch, used in ALL draws
  * @param id: 				string;
+ * @param txt:				string;
+ * @param txtbtn:			string[]|false;
  * @param sticky: 			number|false;
  * @param charcode: 		string;
  * @param font3d: 			number|false;
@@ -318,15 +320,28 @@ static total: ILogTotal = { totalfonts: 0, letters2D: 0, letters3D: 0, letters: 
  * @param animationFrameId: number;
 */
 
-	private static setData(X: IDrawOptions): IParagraphState {
+	private static setData(X: IDrawOptions): IParagraphState|false {
+		/* if font is not called, set font to default */
+		if(!X.font){
+			X.font = _SETTINGS.DEFAULT_FONT
+		};
+
+		if(!Atlas.fonts[X.font]){
+			log('%cError: font name [%s] not exist',_color.error,X.font);
+			return false
+		};
+		
 		const info = Atlas.fonts[X.font]._info;
 		let _parent,
 		_size = X.size ?? _SETTINGS.FONT_SIZE,
-		_lineheight = (_size * info.lineGap) * !X.lineheight ? _SETTINGS.LINE_HEIGHT : X.lineheight,
+		//_lineheight = (_size * info.lineGap) * !X.lineheight ? _SETTINGS.LINE_HEIGHT : X.lineheight,
+		_lineheight = (_size * info.lineGap) * (!X.lineheight ? _SETTINGS.LINE_HEIGHT : X.lineheight),
 		_planepos = X.planepos ?? {x:0, y:0, z:0},
-		_letterpos = X.letterpos ?? {x: 0, y: 0, z: 0},
-		_txtA = X.font !== _SETTINGS.DEFAULT_FONT ? Chars3D.setUpperLower(X.txt, info.chars) : X.txt,
-		_txt = info.charcode === 'word' ? Chars3D.replaceButtonText(_txtA) : _txtA,
+		_txt = X.font !== _SETTINGS.DEFAULT_FONT ? Chars3D.setUpperLower(X.txt, info.chars) : X.txt,
+		_txtbtn = info.charcode === 'word' ? Chars3D.replaceButtonText(_txt) : false,
+		_len = !_txtbtn ? _txt.length : _txtbtn.length,
+		//_txtA = X.font !== _SETTINGS.DEFAULT_FONT ? Chars3D.setUpperLower(X.txt, info.chars) : X.txt,
+		//_txt = info.charcode === 'word' ? Chars3D.replaceButtonText(_txtA) : _txtA,
 		_texture = !X.texture ? false : Chars3D.texture[X.texture],
 		_diffusecolor = X.diffusecolor ? Color3(X.diffusecolor) : Chars3D.defaultDiffuseColor,
 		_emissivecolor = X.emissivecolor ? Color3(X.emissivecolor) : Chars3D.defaultEmissiveColor,
@@ -396,20 +411,21 @@ static total: ILogTotal = { totalfonts: 0, letters2D: 0, letters3D: 0, letters: 
 		return {
 			id: X.id,
 			txt: _txt,
+			txtbtn: _txtbtn,
 			sticky: X.sticky ?? false,
 			charcode: info.charcode, /* <- ONLY IN V2 */
 			font3d: _font3D, /* depth of 3D */
 			bevel: _bevel, /* depth of bevel */
 			billboard: _billboard,
-			letterpos: _letterpos,
+			letterpos: X.letterpos ?? {x: 0, y: 0, z: 0},
 			planepos: _planepos,
 			plane: _parent,
 			font: X.font, /* font name only */
 			meta: X.meta ?? false,
 			size: _size,
-			Len: _txt.length,
+			Len: _len, //_txt.length,
 			lineHeightCalc: _lineheight,
-			paragraphwidth: (X.paragraphwidth && X.paragraphwidth > 0) ? (X.paragraphwidth + _letterpos.x) : false,
+			paragraphwidth: (X.paragraphwidth && X.paragraphwidth > 0) ? X.paragraphwidth : false,
 			kern: (!X.kern && !info.kern) ? false : (!X.kern && info.kern) ? info.kern : (X.kern && !info.kern) ? X.kern : info.kern + X.kern,
 			spacing: X.spacing ?? 0,
 			background: _background,
@@ -463,7 +479,7 @@ static total: ILogTotal = { totalfonts: 0, letters2D: 0, letters3D: 0, letters: 
  * Chars3D main function to draw text, 
  * X: user input options, interface: IDrawOptions
  * @param id: 					string;
- * @param txt: 					string|string[];
+ * @param txt: 					string;
  * @param planePos: 			IPos;
  * @param parent?: 				Mesh;
  * @param meta?: 				any[]; // callback
@@ -513,11 +529,6 @@ static total: ILogTotal = { totalfonts: 0, letters2D: 0, letters3D: 0, letters: 
 
 		/* dispose if exist this id */
 		Chars3D.dispose(X.id);
-
-		/* if font is not called, set font to default */
-		if(!X.font){
-			X.font = _SETTINGS.DEFAULT_FONT
-		};
 
 		/* set and store data */
 		Chars3D.ch[X.id] = Chars3D.setData(X);
@@ -580,7 +591,8 @@ static total: ILogTotal = { totalfonts: 0, letters2D: 0, letters3D: 0, letters: 
 
 		for (; i < Len; i++) {
 			
-			const letter = P.charcode === 'code' ? P.txt.charCodeAt(i) : P.txt[i];
+			//const letter = P.charcode === 'code' ? P.txt.charCodeAt(i) : P.txt[i];
+			const letter = P.txtbtn === false ? P.txt.charCodeAt(i) : P.txtbtn[i];
 			const g = Atlas.fonts[P.font][letter];
 
 			if (g) {
@@ -603,7 +615,7 @@ static total: ILogTotal = { totalfonts: 0, letters2D: 0, letters3D: 0, letters: 
 							IL: g.IL, //g.I.length,
 						 });
 
-						if (P.background || P.border) {
+						//if (P.background || P.border) {
 							/* find minX and maxX */
 							const LE = pos.x + (g.bounds.minX * S); // minX = Left Edge
 							const RE = pos.x + (g.bounds.maxX * S); // maxX = Right Edge
@@ -611,7 +623,7 @@ static total: ILogTotal = { totalfonts: 0, letters2D: 0, letters3D: 0, letters: 
 							/* set max/min bounds */
 							if (LE < minX) minX = LE;
 							if (RE > maxX) maxX = RE
-						}
+						//}
 					};
 
 					letterspace = 0;
@@ -643,30 +655,20 @@ static total: ILogTotal = { totalfonts: 0, letters2D: 0, letters3D: 0, letters: 
 		}
 
 		/*  caclulate background panel coordinates */
-		if (P.background || P.border) {
-			if (minX === Infinity) {
-				minX = maxX = P.letterpos.x
-			};
-		
-			const absoluteTop = P.letterpos.y + (P.ascender * S);	// Locked top of line, MaxY
-			const absoluteBottom = pos.y + (P.descender * S);		// Locked bottom of line, MinY
-			const paragraphHeight = absoluteTop - absoluteBottom;
-			const paragraphWidth = maxX - minX;
-			
-			/** 
-			NOTE: about adjustY / adjustX
-			this is a BUG? as centerYOffset has a tiny declination!  
-			too many different values to calculate correct bounds for each letter,
-			some letters may not have even bounds!
-			adjustY/X added to set a precision Y/X position of background/border
-			*/
-			P.centerXOffset = (minX + (paragraphWidth / 2)) + P.adjustX;
-			P.centerYOffset = (absoluteBottom + (paragraphHeight / 2)) + P.adjustY;
-			
-			P.finalWidth = (paragraphWidth + P.padding[0]) / 2;
-			P.finalHeight = (paragraphHeight + P.padding[1]) / 2;
+		if (minX === Infinity) {
+			minX = maxX = P.letterpos.x
+		};
 
-		}
+		const absoluteTop = P.letterpos.y + (P.ascender * S);   // Locked top of line, MaxY
+		const absoluteBottom = pos.y + (P.descender * S);       // Locked bottom of line, MinY
+		const paragraphHeight = absoluteTop - absoluteBottom;
+		const paragraphWidth = maxX - minX;
+
+		P.centerXOffset = (minX + (paragraphWidth * 0.5)) + P.adjustX;
+		P.centerYOffset = (absoluteBottom + (paragraphHeight * 0.5)) + P.adjustY;
+
+		P.finalWidth = (paragraphWidth * 0.5) + P.padding[0];
+		P.finalHeight = (paragraphHeight * 0.5) + P.padding[1];
 
 		/* in update check the size */
 		if (update) {
@@ -685,11 +687,17 @@ static total: ILogTotal = { totalfonts: 0, letters2D: 0, letters3D: 0, letters: 
 	static drawButtons(O: IParagraphState): void {
 
 		const pos: IPos = {...O.letterpos};
+        const btns = !O.txtbtn ? false : [...O.txtbtn];
+        if(!btns){
+            console.log('Fatal for buttons')
+            return
+        };
 		let letterspace: number = 0,
 		i: number = 0;
 
 		for (; i < O.Len; i++){
-			const letter = O.txt[i],
+			//const letter = O.txt[i],
+			const letter = btns[i],
 			g = Atlas.fonts[O.font][letter];
 			if (g) {
 				/* LINE BREAK used to draw button vertical */
