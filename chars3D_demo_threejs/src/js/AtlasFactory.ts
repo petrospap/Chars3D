@@ -18,23 +18,27 @@ normalize = (vector: Ixy): Ixy => {
 	}
 },
 setGBounds = (bounds: number[]): IGlyphXBounds => {
-	const [xMin, yMin, xMax, yMax] = bounds;
-	
-    // Keep raw, scale coordinate metrics
-    const minX = !xMin ? 0.5 : xMin * _SIZE;
-    const minY = !yMin ? 0.5 : yMin * _SIZE;
-    const maxX = !xMax ? 0.5 : xMax * _SIZE;
-    const maxY = !yMax ? 0.5 : yMax * _SIZE;
+    const [xMin, yMin, xMax, yMax] = bounds;
 
-    const rangeX = (maxX - minX) || 0.01;
-    const rangeY = (maxY - minY) || 0.01;
+    // FIX: Check explicitly for null/undefined so that a raw '0' coordinate passes safely!
+    const rawMinX = (xMin === undefined || xMin === null) ? 0.5 : xMin * _SIZE;
+    const rawMinY = (yMin === undefined || yMin === null) ? 0.5 : yMin * _SIZE;
+    const rawMaxX = (xMax === undefined || xMax === null) ? 0.5 : xMax * _SIZE;
+    const rawMaxY = (yMax === undefined || yMax === null) ? 0.5 : yMax * _SIZE;
 
-    // Pre-compute local bounding centers!
+    // Enforce logical orientation boundaries so min is always the lower anchor
+    const minX = Math.min(rawMinX, rawMaxX);
+    const maxX = Math.max(rawMinX, rawMaxX);
+    const minY = Math.min(rawMinY, rawMaxY);
+    const maxY = Math.max(rawMinY, rawMaxY);
+
+    const rangeX = maxX - minX;
+    const rangeY = maxY - minY;
+
     const centerX = minX + (rangeX * 0.5);
     const centerY = minY + (rangeY * 0.5);
 
-    // changed to return a structured object instead of an indexed array to prevent layout typos!
-    return {minX, minY, maxX, maxY, rangeX, rangeY, centerX, centerY}
+    return { minX, minY, maxX, maxY, rangeX, rangeY, centerX, centerY };
 };
 
 /**
