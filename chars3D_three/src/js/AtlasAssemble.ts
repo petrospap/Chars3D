@@ -67,18 +67,18 @@ export class AtlasAssemble {
 vds: BufferGeometry;
 
 // Main TypedArrays
-P: Float32Array;
-I: Uint32Array;
-U: Float32Array;
-N: Float32Array;
-FID: Float32Array; // Face ID, shader color 1 float per vertex instead of 4!
+P!: Float32Array;
+I!: Uint32Array;
+U!: Float32Array;
+N!: Float32Array;
+FID!: Float32Array; // Face ID, shader color 1 float per vertex instead of 4!
 
 // Panel TypedArrays
-private PP: Float32Array;
-private PI: Uint32Array;
-private PU: Float32Array;
-private PN: Float32Array;
-private PFID: Float32Array;
+private PP!: Float32Array;
+private PI!: Uint32Array;
+private PU!: Float32Array;
+private PN!: Float32Array;
+private PFID!: Float32Array;
 
 // P, I, update
 private panelP: number = 0;
@@ -98,8 +98,8 @@ private totalI: number = 0;
 
 private source: Record<string, IGlyphBuffers> = {};
 private panelCache: Record<string, IBackgroundGeometry> = {};
-private _vertexMasterBuffer: ArrayBuffer;
-private _vertexPanelBuffer: ArrayBuffer;
+private _vertexMasterBuffer!: ArrayBuffer;
+private _vertexPanelBuffer!: ArrayBuffer;
 
 	constructor() {
 		// create VertexData
@@ -758,11 +758,11 @@ private _vertexPanelBuffer: ArrayBuffer;
 		this.I = null!;
 
 		// nullify the Panel buffer
-		this.PP = null;
-		this.PN = null;
-		this.PU = null;
-		this.PFID = null;
-		this.PI = null;
+		this.PP = null!;
+		this.PN = null!;
+		this.PU = null!;
+		this.PFID = null!;
+		this.PI = null!;
 
 		// nullify the raw allocation ArrayBuffers to free memory slots for GC
 		this._vertexMasterBuffer = null!;
