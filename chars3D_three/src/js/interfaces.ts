@@ -1,4 +1,4 @@
-// interfaces v:0.5
+// interfaces v:0.6 - fixed missed type, plus minor updates
 
 export interface IPos {
 x: number;
@@ -29,16 +29,16 @@ m: number[];
 export interface IBackgroundGeometry {
 innerX: Float32Array;
 innerY: Float32Array;
-outerX?: Float32Array;
-outerY?: Float32Array;
+outerX: Float32Array;
+outerY: Float32Array;
 }
 
 /* Main User Text Input, passed to draw() */
 export interface IDrawOptions {
 id: string;
-txt: string|string[];
+txt: string;
 planePos: IPos;
-parent?: any[]; /* Mesh; */
+parent?: any; /* Mesh; */
 meta?: any[];
 buttons?: boolean;
 around?: boolean;
@@ -80,10 +80,11 @@ disablelight?: boolean;
 exclude?: boolean;
 }
 
-
 /* Calculated State setData() */
 export interface IParagraphState {
 id: string;
+txt: string; // fix missed
+txtbtn:	string[]|false; // new
 sticky: number|false;
 charcode: string;
 font3d: number|false;
@@ -91,7 +92,7 @@ bevel: number;
 billboard: number
 letterpos: IPos;
 planepos: IPos;
-plane: any[]; /* TransformNode | Mesh */
+plane: any; /* TransformNode | Mesh */
 font: string;
 meta: any[]|false;
 size: number;
@@ -110,12 +111,12 @@ thickness: number;
 outline: boolean;
 outlinedepth: number;
 outlinecolor: number[];
-paragraph: any[];
+paragraph: any;
 meshes: any[];
-material: any[]; /* Char3DMaterial */
+material: any; /* Char3DMaterial */
 defaultKern: number|false;
 source: IBoundingBox|false;
-jit: any[]; /* AtlasAssemble */
+jit: any; /* AtlasAssemble */
 plasmatime:number;
 finalWidth: number;
 finalHeight: number;
@@ -164,7 +165,7 @@ alpha?: number; // Alpha property map
 }
 
 export interface IShaderMaterialColors {
-texture?: any[]; //Texture
+texture?: any; //Texture
 frontcolor?: IColor4; //Color4, 
 sidewallcolor?: IColor4; //Color4, 
 backcolor?: IColor4; //Color4,
@@ -175,10 +176,9 @@ specular?: number[]; //Color3,
 alpha?: number;
 background?: boolean;
 bgcolor?: IColor4; //Color4,
-bgtexture?: any[]; //Texture
+bgtexture?: any; //Texture
 bordercolor?: IColor4;
 disablelight?: number;
-uIs3DMode?: number
 }
 
 // helper Enable Or Disable text
@@ -208,7 +208,7 @@ U: Float32Array; 		// UVs
 FID: Float32Array;		// Colors shader
 L: number; 				// Positions length
 IL: number; 			// RAW Indices length
-bounds?: IGlyphXBounds 	// chars bounds
+bounds: IGlyphXBounds 	// chars bounds
 //_k?: Record<string, number>; // kern
 }
 
@@ -259,23 +259,23 @@ r: IRange[];      // ranges
 }
 
 /* 2D or 3D letters */
-export interface IG3D {
+interface IG3D {
 _w: number;			// width
-_x?: number[];	  	// bounds from opentype.js [xMin, yMin, xMax, yMax]
-_v?: number[];     	// vertices
-_i?: number[];     	// indices
-_n?: number[];     	// normals
-_k?: Record<string, number>; // kern
-_o?: IContour[];  	// contours (3D)
-_f?: number;	  	// NEW front vertex count, same as the old V1 _b.f
-bounds?: IGlyphXBounds; // char bounds NOTE: when we set this we delete "_x"
-P?: Float32Array; 		// Positions
-I?: Uint32Array;  		// Indices number[];
-N?: Float32Array; 		// Normals
-U?: Float32Array; 		// UVs
-FID?: Float32Array;		// Colors shader
-L?: number; 			// Positions length
-IL?: number; 			// RAW Indices length
+_x: number[];	  	// bounds from opentype.js [xMin, yMin, xMax, yMax]
+_v: number[];     	// vertices
+_i: number[];     	// indices
+_n: number[];     	// normals
+_k: Record<string, number>; // kern
+_o: IContour[];  	// contours (3D)
+_f: number;	  	// NEW front vertex count, same as the old V1 _b.f
+bounds: IGlyphXBounds; // char bounds NOTE: when we set this we delete "_x"
+P: Float32Array; 		// Positions
+I: Uint32Array;  		// Indices number[];
+N: Float32Array; 		// Normals
+U: Float32Array; 		// UVs
+FID: Float32Array;		// Colors shader
+L: number; 				// Positions length
+IL: number; 			// RAW Indices length
 }
 
 
